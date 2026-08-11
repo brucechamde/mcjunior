@@ -16,7 +16,7 @@ function Footer() {
 
         <div className="flex gap-5">
           
-            <a href="https://instagram.com"
+            <a href="https://www.facebook.com/share/1CgoVEDnN4/"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
@@ -25,7 +25,7 @@ function Footer() {
             <FaInstagram size={20} />
           </a>
           
-            <a href="https://facebook.com"
+            <a href="https://www.facebook.com/share/1CgoVEDnN4/"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Facebook"
@@ -34,7 +34,7 @@ function Footer() {
             <FaFacebook size={20} />
           </a>
           
-            <a href="https://tiktok.com"
+            <a href="https://www.tiktok.com/@mcjuniorproject?_r=1&_t=ZS-98mwt2icCmq"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="TikTok"
