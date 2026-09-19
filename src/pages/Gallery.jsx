@@ -1,181 +1,192 @@
-import { useState, useEffect } from 'react'
-import { FaX, FaChevronLeft, FaChevronRight } from 'react-icons/fa6'
+import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { PiCaretLeft, PiCaretRight, PiX } from 'react-icons/pi'
 
-// Import your gallery photos here — add as many as you like
-import gallery1 from '../assets/images/gallery/gallery1.jpeg'
-import gallery2 from '../assets/images/gallery/gallery2.jpeg'
-import gallery3 from '../assets/images/gallery/gallery3.jpeg'
-import gallery4 from '../assets/images/gallery/gallery4.jpeg'
-import gallery5 from '../assets/images/gallery/gallery5.jpeg'
-import gallery6 from '../assets/images/gallery/gallery6.jpeg'
+import Ambient from '../components/Ambient'
+import Reveal from '../components/Reveal'
+import { useGalleryPhotos } from '../hooks/useGalleryPhotos'
 
-const photos = [
-  { src: gallery1, category: 'Nightclub', alt: 'Nightclub event 1' },
-  { src: gallery2, category: 'Weddings', alt: 'Wedding event 1' },
-  { src: gallery3, category: 'Corporate', alt: 'Corporate event 1' },
-  { src: gallery4, category: 'Nightclub', alt: 'Nightclub event 2' },
-  { src: gallery5, category: 'Weddings', alt: 'Wedding event 2' },
-  { src: gallery6, category: 'Corporate', alt: 'Corporate event 2' },
-  // Add more objects here as you get more photos
-]
-
-const categories = ['All', 'Nightclub', 'Weddings', 'Corporate']
+const skeletonRatios = ['aspect-[3/4]', 'aspect-square', 'aspect-[4/5]', 'aspect-[3/2]', 'aspect-[3/4]', 'aspect-square', 'aspect-[4/5]', 'aspect-[3/2]']
 
 function Gallery() {
-  const [activeCategory, setActiveCategory] = useState('All')
+  // Photos load from Cloudinary (see src/config/gallery.js); bundled photos are the fallback.
+  const { status, photos, categories: photoCategories } = useGalleryPhotos()
+  const categories = ['All', ...photoCategories]
+  const loading = status === 'loading'
+
+  // The filter lives in the URL (?category=Weddings) so it can be shared and survives refresh.
+  const [params, setParams] = useSearchParams()
+  const requested = params.get('category')
+  const activeCategory = categories.includes(requested) ? requested : 'All'
+
   const [lightboxIndex, setLightboxIndex] = useState(null)
+  const closeRef = useRef(null)
+  const triggerRef = useRef(null)
 
   const filteredPhotos =
-    activeCategory === 'All'
-      ? photos
-      : photos.filter((p) => p.category === activeCategory)
+    activeCategory === 'All' ? photos : photos.filter((p) => p.category === activeCategory)
 
-  const openLightbox = (index) => setLightboxIndex(index)
-  const closeLightbox = () => setLightboxIndex(null)
+  const isOpen = lightboxIndex !== null
+  const count = filteredPhotos.length
 
-  const nextPhoto = () =>
-    setLightboxIndex((prev) => (prev + 1) % filteredPhotos.length)
-
-  const prevPhoto = () =>
-    setLightboxIndex((prev) => (prev - 1 + filteredPhotos.length) % filteredPhotos.length)
-
-  // Keyboard navigation for the lightbox
-  useEffect(() => {
-    if (lightboxIndex === null) return
-
-    const handleKey = (e) => {
-      if (e.key === 'Escape') closeLightbox()
-      if (e.key === 'ArrowRight') nextPhoto()
-      if (e.key === 'ArrowLeft') prevPhoto()
-    }
-
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [lightboxIndex, filteredPhotos.length])
-
-  // Reset to first photo of new category when filter changes, avoids out-of-range index
-  useEffect(() => {
+  const selectCategory = (cat) => {
     setLightboxIndex(null)
-  }, [activeCategory])
+    setParams(cat === 'All' ? {} : { category: cat }, { replace: true })
+  }
+
+  const openLightbox = (index, e) => {
+    triggerRef.current = e.currentTarget
+    setLightboxIndex(index)
+  }
+
+  const closeLightbox = () => {
+    setLightboxIndex(null)
+    triggerRef.current?.focus()
+  }
+
+  useEffect(() => {
+    if (!isOpen) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeLightbox()
+      if (e.key === 'ArrowRight') setLightboxIndex((i) => (i + 1) % count)
+      if (e.key === 'ArrowLeft') setLightboxIndex((i) => (i - 1 + count) % count)
+    }
+    window.addEventListener('keydown', onKey)
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    closeRef.current?.focus()
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isOpen, count])
+
+  const current = isOpen ? filteredPhotos[lightboxIndex] : null
 
   return (
-    <section className="relative bg-[#0B0B10] overflow-hidden px-4 pt-28 sm:pt-36 pb-20 sm:pb-28">
-      {/* Background contrast layer, same system as rest of site */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 -left-24 w-96 h-96 bg-pink-600/15 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 -right-24 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
-      </div>
+    <section className="relative isolate overflow-hidden px-4 pb-24 pt-32 sm:px-6 lg:px-8 lg:pb-32">
+      <Ambient />
 
-      <div className="relative max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-10 sm:mb-12 text-center">
-          <p className="text-xs sm:text-sm font-semibold tracking-[0.3em] text-cyan-300 mb-3">
-            THE LOOK AND FEEL
-          </p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Gallery
-          </h1>
-          <p className="mt-4 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
+      <div className="mx-auto max-w-7xl">
+        <Reveal className="max-w-2xl">
+          <h1 className="text-5xl font-semibold tracking-tighter sm:text-6xl">Gallery</h1>
+          <p className="mt-4 max-w-[52ch] text-base leading-relaxed text-muted sm:text-lg">
             A look back at the nights, weddings and events we've helped bring to life.
           </p>
-        </div>
+        </Reveal>
 
-        {/* Category tabs */}
-        <div className="flex flex-wrap justify-center gap-3 mb-10 sm:mb-12">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-5 py-2 rounded-full text-sm font-semibold transition-colors ${
-                activeCategory === cat
-                  ? 'bg-pink-500 text-white'
-                  : 'bg-white/[0.04] border border-white/10 text-gray-300 hover:border-white/20'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        <Reveal delay={120} className="mt-10 flex flex-wrap gap-2" role="group" aria-label="Filter photos by category">
+          {categories.map((cat) => {
+            const selected = activeCategory === cat
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => selectCategory(cat)}
+                aria-pressed={selected}
+                className={`h-10 rounded-full px-5 text-sm font-medium transition-[background-color,color,border-color,transform] duration-300 active:scale-[0.97] ${
+                  selected
+                    ? 'bg-fg text-ink-950'
+                    : 'border border-line text-muted hover:border-fg/25 hover:text-fg'
+                }`}
+              >
+                {cat}
+              </button>
+            )
+          })}
+        </Reveal>
 
-        {/* Masonry grid */}
-        <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
+        {loading && (
+          <div aria-busy="true" aria-label="Loading photos" className="mt-10 columns-2 gap-4 sm:columns-3 lg:columns-4">
+            {skeletonRatios.map((ratio, i) => (
+              <div key={i} className={`mb-4 w-full animate-pulse break-inside-avoid rounded-xl bg-fg/[0.06] ${ratio}`} />
+            ))}
+          </div>
+        )}
+
+        <div key={activeCategory} className="mt-10 columns-2 gap-4 sm:columns-3 lg:columns-4">
           {filteredPhotos.map((photo, i) => (
-            <button
-              key={i}
-              onClick={() => openLightbox(i)}
-              className="block w-full break-inside-avoid rounded-xl overflow-hidden group relative"
-            >
-              <img
-                src={photo.src}
-                alt={photo.alt}
-                className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-            </button>
+            <Reveal key={photo.id} delay={(i % 4) * 80} y={20} className="mb-4 break-inside-avoid">
+              <button
+                type="button"
+                onClick={(e) => openLightbox(i, e)}
+                aria-label={`Open photo: ${photo.alt}`}
+                className="group relative block w-full overflow-hidden rounded-xl ring-1 ring-fg/10"
+              >
+                <img
+                  src={photo.src}
+                  srcSet={photo.srcSet}
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                  alt={photo.alt}
+                  width={photo.width}
+                  height={photo.height}
+                  loading="lazy"
+                  className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              </button>
+            </Reveal>
           ))}
         </div>
 
-        {filteredPhotos.length === 0 && (
-          <p className="text-center text-gray-500 text-sm mt-10">
-            No photos in this category yet.
-          </p>
+        {!loading && count === 0 && (
+          <p className="mt-10 text-sm text-dim">No photos in this category yet. Check back soon.</p>
         )}
       </div>
 
-      {/* Lightbox */}
-      {lightboxIndex !== null && (
+      {current && (
         <div
-          className="fixed inset-0 bg-black/90 z-[100] flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Photo viewer"
           onClick={closeLightbox}
+          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center overscroll-contain bg-black/85 px-4 backdrop-blur-md"
+          data-theme="dark"
         >
           <button
+            ref={closeRef}
+            type="button"
             onClick={closeLightbox}
-            aria-label="Close"
-            className="absolute top-5 right-5 sm:top-8 sm:right-8 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            aria-label="Close viewer"
+            className="icon-btn absolute right-4 top-4 sm:right-8 sm:top-8"
           >
-            <FaX className="w-4 h-4" />
+            <PiX size={20} aria-hidden="true" />
           </button>
 
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation()
-              prevPhoto()
+              setLightboxIndex((i) => (i - 1 + count) % count)
             }}
             aria-label="Previous photo"
-            className="absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            className="icon-btn absolute left-4 top-1/2 -translate-y-1/2 sm:left-8"
           >
-            <FaChevronLeft className="w-4 h-4" />
+            <PiCaretLeft size={20} aria-hidden="true" />
           </button>
 
           <img
-            src={filteredPhotos[lightboxIndex].src}
-            alt={filteredPhotos[lightboxIndex].alt}
+            key={current.id}
+            src={current.full}
+            alt={current.alt}
             onClick={(e) => e.stopPropagation()}
-            className="max-w-full max-h-[85vh] rounded-xl object-contain"
+            className="max-h-[85dvh] max-w-full rounded-2xl object-contain shadow-[0_40px_120px_-30px_rgba(232,87,127,0.35)]"
           />
 
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation()
-              nextPhoto()
+              setLightboxIndex((i) => (i + 1) % count)
             }}
             aria-label="Next photo"
-            className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            className="icon-btn absolute right-4 top-1/2 -translate-y-1/2 sm:right-8"
           >
-            <FaChevronRight className="w-4 h-4" />
+            <PiCaretRight size={20} aria-hidden="true" />
           </button>
 
-          <p className="absolute bottom-5 sm:bottom-8 left-1/2 -translate-x-1/2 text-sm text-gray-400">
-            {lightboxIndex + 1} / {filteredPhotos.length}
+          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tabular-nums text-muted" aria-live="polite">
+            {lightboxIndex + 1} / {count}
           </p>
         </div>
       )}

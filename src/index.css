@@ -1,1 +1,328 @@
 @import "tailwindcss";
+@import "@fontsource-variable/geist";
+
+/*
+  Design tokens
+  Two themes (dark and light), one accent (rose), one violet-tinted neutral family.
+  Components read the plain variables below, so a theme switch needs no class changes.
+  Radius system: buttons are pills, panels 20px, inner tiles and inputs 12px.
+*/
+@theme {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --radius-panel: 1.25rem;
+}
+
+@theme inline {
+  --color-ink-950: var(--ink-950);
+  --color-ink-900: var(--ink-900);
+  --color-ink-800: var(--ink-800);
+  --color-ink-700: var(--ink-700);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-dim: var(--dim);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+}
+
+/* dark: (theme is set on <html data-theme>, see index.html and ThemeProvider) */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root,
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ink-950: #0f0724;
+  --ink-900: #170c33;
+  --ink-800: #211347;
+  --ink-700: #2d1a5c;
+  --line: rgb(255 255 255 / 0.11);
+  --fg: #f6f4fb;
+  --muted: #bab4d4;
+  --dim: #9f99bf;
+  --accent: #e8577f;
+  --accent-hover: #f0708f;
+  --on-accent: #10081f;
+  --panel-bg: rgb(23 12 51 / 0.72);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --ink-950: #fbf8ff;
+  --ink-900: #f3ecff;
+  --ink-800: #ebe1ff;
+  --ink-700: #dccff5;
+  --line: rgb(26 16 51 / 0.13);
+  --fg: #1a1033;
+  --muted: #4f4670;
+  --dim: #6b6390;
+  --accent: #c92f5c;
+  --accent-hover: #b32250;
+  --on-accent: #ffffff;
+  --panel-bg: rgb(255 255 255 / 0.72);
+}
+
+/* z-index scale: header < modal < grain */
+:root {
+  --z-header: 40;
+  --z-modal: 50;
+  --z-grain: 60;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--ink-950);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: clip;
+  }
+
+  h1, h2, h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  section[id] {
+    scroll-margin-top: 4rem;
+  }
+
+  a, button, [role="tab"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: rgb(232 87 127 / 0.4);
+    color: #fff;
+  }
+
+  /* Film grain: fixed, non-interactive, never on scrolling containers */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-grain);
+    pointer-events: none;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-panel);
+  }
+
+  /* Buttons */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 3rem;
+    padding: 0 1.5rem;
+    border-radius: 9999px;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 12px 32px -14px rgb(232 87 127 / 0.55);
+    transition: background-color 0.25s, box-shadow 0.25s, transform 0.25s var(--ease-out-expo);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    box-shadow: 0 16px 36px -12px rgb(232 87 127 / 0.65);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.97);
+  }
+
+  .btn-primary[disabled] {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .link-arrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--fg);
+    transition: color 0.25s;
+  }
+
+  .link-arrow svg {
+    transition: transform 0.3s var(--ease-out-expo);
+  }
+
+  .link-arrow:hover {
+    color: var(--accent);
+  }
+
+  .link-arrow:hover svg {
+    transform: translateX(4px);
+  }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--line);
+    color: var(--fg);
+    background: color-mix(in srgb, var(--fg) 4%, transparent);
+    transition: background-color 0.25s, border-color 0.25s, transform 0.25s var(--ease-out-expo);
+  }
+
+  .icon-btn:hover {
+    background: color-mix(in srgb, var(--fg) 9%, transparent);
+    border-color: color-mix(in srgb, var(--fg) 24%, transparent);
+  }
+
+  .icon-btn:active {
+    transform: scale(0.94);
+  }
+
+  /* Form fields */
+  .field {
+    width: 100%;
+    background: var(--ink-800);
+    border: 1px solid color-mix(in srgb, var(--fg) 16%, transparent);
+    border-radius: 0.75rem;
+    padding: 0.8125rem 1rem;
+    font-size: 0.9375rem;
+    color: var(--fg);
+    transition: border-color 0.25s, box-shadow 0.25s;
+  }
+
+  .field::placeholder {
+    color: var(--dim);
+  }
+
+  .field:hover {
+    border-color: color-mix(in srgb, var(--fg) 28%, transparent);
+  }
+
+  .field:focus-visible {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgb(232 87 127 / 0.25);
+  }
+
+  .field[aria-invalid="true"] {
+    border-color: #f87171;
+  }
+
+  /* Cursor spotlight */
+  .spotlight {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .spotlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s;
+    background: radial-gradient(
+      360px circle at var(--mx, 50%) var(--my, 50%),
+      rgb(232 87 127 / 0.14),
+      transparent 70%
+    );
+  }
+
+  .spotlight:hover::before {
+    opacity: 1;
+  }
+}
+
+/* The logo file is white artwork; flip it to dark on the light theme */
+[data-theme="light"] .theme-logo {
+  filter: invert(1) brightness(0.25);
+}
+
+/* Ambient light: transform-only drift, hero atmosphere */
+@keyframes drift-a {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(60px, 50px, 0); }
+}
+
+@keyframes drift-b {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-70px, -40px, 0); }
+}
+
+.orb-a { animation: drift-a 24s ease-in-out infinite; }
+.orb-b { animation: drift-b 30s ease-in-out infinite; }
+
+/* DJ deck (hero): spin, tonearm sway, beat rings, equalizer. Transform and opacity only. */
+@keyframes deck-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes deck-sway {
+  0%, 100% { transform: rotate(-1.4deg); }
+  50% { transform: rotate(1.4deg); }
+}
+
+@keyframes deck-ring {
+  0% { transform: scale(0.7); opacity: 0.55; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+@keyframes deck-bar {
+  0%, 100% { transform: scaleY(0.18); }
+  50% { transform: scaleY(1); }
+}
+
+.deck-vinyl { animation: deck-spin 3.6s linear infinite; }
+.deck-arm { animation: deck-sway 2.9s ease-in-out infinite; }
+.deck-ring { animation: deck-ring 3.9s ease-out infinite; }
+.deck-bar { transform-origin: bottom; transform: scaleY(0.5); animation: deck-bar 1s ease-in-out infinite; }
+
+/* Opacity only, and no fill-forwards: a finished animation must not keep the whole page on its own layer. */
+@keyframes page-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.page-in {
+  animation: page-in 0.45s ease-out backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

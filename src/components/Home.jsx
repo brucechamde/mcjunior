@@ -1,146 +1,175 @@
-import { useState, useEffect, useRef } from 'react'
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { motion, useReducedMotion } from 'motion/react'
+import { PiArrowRight, PiCaretLeft, PiCaretRight, PiPause, PiPlay } from 'react-icons/pi'
+
+import Ambient from './Ambient'
+import DJDeck from './DJDeck'
+import Magnetic from './Magnetic'
+import Reveal from './Reveal'
 
 import img1 from '../assets/images/Img.jpg'
 import img2 from '../assets/images/Img2.jpg'
 import img3 from '../assets/images/Img3.png'
 
 const banners = [
-  { image: img1 },
-  { image: img2 },
-  { image: img3 },
+  { image: img1, width: 1656, height: 630 },
+  { image: img2, width: 828, height: 315 },
+  { image: img3, width: 919, height: 326 },
 ]
 
-const AUTOPLAY_MS = 5000
+const facts = [
+  { value: '13 years', label: 'in the nightclub industry' },
+  { value: 'Melbourne', label: 'Australia' },
+  { value: 'Telstra, Salmat, Tele Tech', label: 'corporate clients' },
+]
 
-function Home() {
+const AUTOPLAY_MS = 6000
+
+const rise = (delay) => ({
+  initial: { opacity: 0, y: 28 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.9, delay, ease: [0.16, 1, 0.3, 1] },
+})
+
+function BannerSlider() {
+  const reduce = useReducedMotion()
   const [index, setIndex] = useState(0)
-  const timerRef = useRef(null)
-
-  const startTimer = () => {
-    clearInterval(timerRef.current)
-    timerRef.current = setInterval(() => {
-      setIndex((prev) => (prev + 1) % banners.length)
-    }, AUTOPLAY_MS)
-  }
+  const [playing, setPlaying] = useState(true)
+  const [hovering, setHovering] = useState(false)
 
   useEffect(() => {
-    startTimer()
-    return () => clearInterval(timerRef.current)
-  }, [])
+    if (reduce || !playing || hovering) return
+    const timer = setInterval(() => setIndex((i) => (i + 1) % banners.length), AUTOPLAY_MS)
+    return () => clearInterval(timer)
+  }, [reduce, playing, hovering, index])
 
-  const goTo = (i) => {
-    setIndex(i)
-    startTimer()
-  }
-
-  const next = () => goTo((index + 1) % banners.length)
-  const prev = () => goTo((index - 1 + banners.length) % banners.length)
+  const go = (i) => setIndex((i + banners.length) % banners.length)
 
   return (
-    <section id="home" className="relative bg-[#0B0B10] overflow-hidden">
-      {/* Background contrast layer */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-pink-600/20 rounded-full blur-3xl" />
-        <div className="absolute top-1/3 -right-24 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
+    <div role="group" aria-roledescription="carousel" aria-label="Featured events">
+      <div
+        onMouseEnter={() => setHovering(true)}
+        onMouseLeave={() => setHovering(false)}
+        className="relative aspect-[2.63/1] overflow-hidden rounded-[var(--radius-panel)] bg-ink-900 ring-1 ring-fg/10 shadow-[0_30px_80px_-30px_rgba(232,87,127,0.35)]"
+      >
+        {banners.map((banner, i) => (
+          <img
+            key={banner.image}
+            src={banner.image}
+            alt={`Featured event banner ${i + 1} of ${banners.length}`}
+            width={banner.width}
+            height={banner.height}
+            aria-hidden={i !== index}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            className={`absolute inset-0 size-full object-contain transition-[opacity,transform] duration-[900ms] ease-out ${
+              i === index ? 'scale-100 opacity-100' : 'scale-[1.03] opacity-0'
+            }`}
+          />
+        ))}
       </div>
 
-      {/* Content sits above the background layer */}
-      <div className="relative">
-        {/* Eyebrow */}
-        <div className="pt-28 sm:pt-36 pb-8 sm:pb-10 px-4 text-center">
-          <p className="text-xs sm:text-sm font-semibold tracking-[0.3em] text-pink-400">
-            MC · DJ · EVENTS
-          </p>
+      <div className="mt-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          {banners.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => go(i)}
+              aria-label={`Show banner ${i + 1}`}
+              aria-current={i === index}
+              className="group flex h-6 items-center"
+            >
+              <span
+                className={`block h-1 rounded-full transition-[width,background-color] duration-300 ${
+                  i === index ? 'w-8 bg-accent' : 'w-4 bg-fg/25 group-hover:bg-fg/50'
+                }`}
+              />
+            </button>
+          ))}
         </div>
 
-        {/* Sliding banner */}
-        <div className="px-4 sm:px-6 lg:px-8 pb-12 sm:pb-16">
-          <div
-            className="relative w-full max-w-6xl mx-auto aspect-[16/9] sm:aspect-[21/9] overflow-hidden rounded-2xl"
-            onMouseEnter={() => clearInterval(timerRef.current)}
-            onMouseLeave={startTimer}
+        <div className="flex items-center gap-2">
+          <button type="button" onClick={() => go(index - 1)} aria-label="Previous banner" className="icon-btn">
+            <PiCaretLeft size={18} aria-hidden="true" />
+          </button>
+          {!reduce && (
+            <button
+              type="button"
+              onClick={() => setPlaying((p) => !p)}
+              aria-label={playing ? 'Pause slideshow' : 'Play slideshow'}
+              className="icon-btn"
+            >
+              {playing ? <PiPause size={16} aria-hidden="true" /> : <PiPlay size={16} aria-hidden="true" />}
+            </button>
+          )}
+          <button type="button" onClick={() => go(index + 1)} aria-label="Next banner" className="icon-btn">
+            <PiCaretRight size={18} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Home() {
+  return (
+    <section id="home" className="relative isolate overflow-hidden">
+      <Ambient />
+
+      <div className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 lg:px-8 lg:pb-24">
+        {/* Hero */}
+        <div className="grid items-center gap-12 lg:min-h-[calc(100dvh-7rem)] lg:grid-cols-12 lg:gap-8">
+          <div className="lg:col-span-7">
+            <motion.h1
+              {...rise(0.15)}
+              className="text-[2.75rem] font-semibold leading-[1.04] tracking-tighter sm:text-6xl xl:text-[4.5rem]"
+            >
+              Turning your event into an{' '}
+              <em className="pb-1 font-medium italic text-accent">experience</em>
+            </motion.h1>
+
+            <motion.p {...rise(0.3)} className="mt-6 max-w-[46ch] text-base leading-relaxed text-muted sm:text-lg">
+              From intimate private functions to full-scale nightclub takeovers, we bring the sound, the energy and
+              the crowd.
+            </motion.p>
+
+            <motion.div {...rise(0.45)} className="mt-9 flex flex-wrap items-center gap-x-8 gap-y-4">
+              <Magnetic>
+                <Link to="/#contact" className="btn-primary">
+                  Book an event
+                  <PiArrowRight size={18} aria-hidden="true" />
+                </Link>
+              </Magnetic>
+              <Link to="/#services" className="link-arrow">
+                View services
+                <PiArrowRight size={18} aria-hidden="true" />
+              </Link>
+            </motion.div>
+          </div>
+
+          <motion.div
+            {...rise(0.3)}
+            className="relative mx-auto aspect-[4/5] w-full max-w-md lg:col-span-5 lg:aspect-auto lg:h-[min(68dvh,600px)] lg:max-w-none"
           >
-            <div
-              className="flex h-full transition-transform duration-700 ease-in-out"
-              style={{ transform: `translateX(-${index * 100}%)` }}
-            >
-              {banners.map((banner, i) => (
-                <div key={i} className="min-w-full h-full relative">
-                  <img
-                    src={banner.image}
-                    alt={`Banner ${i + 1}`}
-                    className="absolute inset-0 w-full h-full object-contain"
-                  />
-                  <div className="absolute inset-0 bg-black/50" />
-                </div>
-              ))}
-            </div>
-
-            {/* Prev / next arrows */}
-            <button
-              onClick={prev}
-              aria-label="Previous banner"
-              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
-            >
-              <FaChevronLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={next}
-              aria-label="Next banner"
-              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 flex items-center justify-center text-white transition-colors"
-            >
-              <FaChevronRight className="w-4 h-4" />
-            </button>
-
-            {/* Dots */}
-            <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-              {banners.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => goTo(i)}
-                  aria-label={`Go to banner ${i + 1}`}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    i === index ? 'w-6 bg-white' : 'w-2 bg-white/40 hover:bg-white/60'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
+            <DJDeck />
+          </motion.div>
         </div>
 
-        {/* Heading, subtitle, buttons */}
-        <div className="pb-10 sm:pb-14 px-4 text-center">
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-white tracking-tight max-w-3xl mx-auto leading-tight">
-            Turning your event into an experience
-          </h1>
-          <p className="mt-5 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
-            From intimate private functions to full-scale nightclub takeovers,
-            we bring the sound, the energy and the crowd.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <button
-              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-6 py-3 rounded-full bg-pink-500 text-white font-semibold text-sm hover:bg-pink-400 transition-colors"
-            >
-              Book an event
-            </button>
-            <button
-              onClick={() => document.getElementById('services')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-6 py-3 rounded-full border border-white/20 text-white font-semibold text-sm hover:border-white/40 transition-colors"
-            >
-              View services
-            </button>
-          </div>
-        </div>
+        {/* Featured banners */}
+        <Reveal className="mt-16 lg:mt-8">
+          <BannerSlider />
+        </Reveal>
+
+        {/* Facts */}
+        <Reveal as="dl" className="mt-16 grid gap-8 border-t border-line pt-10 sm:grid-cols-3">
+          {facts.map((fact) => (
+            <div key={fact.value}>
+              <dt className="text-xl font-medium tracking-tight sm:text-2xl">{fact.value}</dt>
+              <dd className="mt-1 text-sm text-dim">{fact.label}</dd>
+            </div>
+          ))}
+        </Reveal>
       </div>
     </section>
   )

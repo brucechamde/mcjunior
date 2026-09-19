@@ -6,16 +6,16 @@ import Events from '../components/Events'
 import Contact from '../components/Contact'
 
 function MainPage() {
-  const location = useLocation()
+  const { hash, key } = useLocation()
 
+  // Deep links like /#services scroll to their section, including repeat clicks.
   useEffect(() => {
-    if (location.state?.scrollTo) {
-      const section = document.getElementById(location.state.scrollTo)
-      if (section) {
-        setTimeout(() => section.scrollIntoView({ behavior: 'smooth' }), 100)
-      }
-    }
-  }, [location])
+    if (!hash) return
+    const timer = setTimeout(() => {
+      document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 80)
+    return () => clearTimeout(timer)
+  }, [hash, key])
 
   return (
     <>

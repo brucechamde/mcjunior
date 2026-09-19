@@ -4,7 +4,33 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bruce</title>
+    <meta name="theme-color" content="#0f0724" />
+    <meta name="color-scheme" content="dark light" />
+    <script>
+      // Apply the saved or device theme before first paint, so there is no flash.
+      ;(function () {
+        var theme = 'dark'
+        try {
+          var saved = localStorage.getItem('theme')
+          if (saved === 'light' || saved === 'dark') theme = saved
+          else if (window.matchMedia('(prefers-color-scheme: light)').matches) theme = 'light'
+        } catch (e) {}
+        document.documentElement.setAttribute('data-theme', theme)
+        var meta = document.querySelector('meta[name="theme-color"]')
+        if (meta) meta.setAttribute('content', theme === 'light' ? '#fbf8ff' : '#0f0724')
+      })()
+    </script>
+    <title>The MC Junior Project | MC, DJ and Event Production in Melbourne</title>
+    <meta
+      name="description"
+      content="MC, DJ, nightclub promotion and event management in Melbourne. Private functions, corporate events, weddings and talent management from The MC Junior Project."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="The MC Junior Project" />
+    <meta
+      property="og:description"
+      content="MC, DJ and event production for private functions, corporate events, weddings and nightclubs in Melbourne."
+    />
   </head>
   <body>
     <div id="root"></div>

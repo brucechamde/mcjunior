@@ -1,4 +1,7 @@
-import { FaCalendar, FaArrowRight } from 'react-icons/fa6'
+import { PiCalendarBlank } from 'react-icons/pi'
+
+import Ambient from '../components/Ambient'
+import Reveal from '../components/Reveal'
 
 import featured from '../assets/images/highlights/featured.jpeg'
 import highlight1 from '../assets/images/highlights/highlight1.jpeg'
@@ -8,152 +11,126 @@ import highlight4 from '../assets/images/highlights/highlight4.jpeg'
 
 const featuredHighlight = {
   image: featured,
+  size: [1152, 2048],
   tag: 'Nightclub',
   date: 'Aug 27, 2026',
+  iso: '2026-08-27',
   title: 'Outstanding Vol.7 was one for the books',
   excerpt:
-    'The Moser Room came alive with a packed floor, a killer lineup, and a crowd that didn\'t stop moving until close. Here\'s a look back at the night.',
+    "The Moser Room came alive with a packed floor, a killer lineup, and a crowd that didn't stop moving until close. Here's a look back at the night.",
 }
 
+// Four items fill a 7/5 + 5/7 grid exactly, so there are no empty cells.
 const highlights = [
   {
     image: highlight1,
+    size: [1152, 2048],
     tag: 'Weddings',
     date: 'Jul 12, 2026',
+    iso: '2026-07-12',
     title: 'A garden wedding to remember',
     excerpt: 'Soft lighting, live acoustic sets, and a reception that ran well past midnight.',
+    span: 'lg:col-span-7',
   },
   {
     image: highlight2,
+    size: [720, 482],
     tag: 'Corporate',
     date: 'Jun 3, 2026',
+    iso: '2026-06-03',
     title: 'Telstra end-of-year celebration',
     excerpt: 'Full production for 300+ guests, from stage design to the closing set.',
+    span: 'lg:col-span-5',
   },
   {
     image: highlight3,
+    size: [2048, 2048],
     tag: 'Talent',
     date: 'May 18, 2026',
+    iso: '2026-05-18',
     title: 'Meet our newest signed DJ',
     excerpt: 'Straight from the local club circuit to our talent roster this month.',
+    span: 'lg:col-span-5',
   },
   {
     image: highlight4,
+    size: [2048, 2048],
     tag: 'Nightclub',
     date: 'Apr 29, 2026',
+    iso: '2026-04-29',
     title: 'Behind the scenes: building a set',
     excerpt: 'What actually goes into planning a three-hour nightclub takeover.',
+    span: 'lg:col-span-7',
   },
 ]
 
-const tagStyles = {
-  Nightclub: 'bg-pink-500/10 text-pink-400 ring-pink-500/30',
-  Weddings: 'bg-cyan-400/10 text-cyan-300 ring-cyan-400/30',
-  Corporate: 'bg-pink-500/10 text-pink-400 ring-pink-500/30',
-  Talent: 'bg-cyan-400/10 text-cyan-300 ring-cyan-400/30',
+function Meta({ tag, date, iso }) {
+  return (
+    <div className="flex items-center gap-4 text-sm">
+      <span className="font-medium text-accent">{tag}</span>
+      <span className="flex items-center gap-1.5 text-dim">
+        <PiCalendarBlank size={16} aria-hidden="true" />
+        <time dateTime={iso}>{date}</time>
+      </span>
+    </div>
+  )
 }
 
 function Highlights() {
   return (
-    <section className="relative bg-[#0B0B10] overflow-hidden px-4 pt-28 sm:pt-36 pb-20 sm:pb-28">
-      {/* Background contrast layer, same system as rest of site */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 -right-24 w-96 h-96 bg-pink-600/15 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 -left-24 w-96 h-96 bg-cyan-500/15 rounded-full blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage:
-              'linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
-      </div>
+    <section className="relative isolate overflow-hidden px-4 pb-24 pt-32 sm:px-6 lg:px-8 lg:pb-32">
+      <Ambient />
 
-      <div className="relative max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-12 sm:mb-16 text-center">
-          <p className="text-xs sm:text-sm font-semibold tracking-[0.3em] text-cyan-300 mb-3">
-            RECAPS AND MOMENTS
-          </p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Highlights
-          </h1>
-          <p className="mt-4 text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
+      <div className="mx-auto max-w-7xl">
+        <Reveal className="max-w-2xl">
+          <h1 className="text-5xl font-semibold tracking-tighter sm:text-6xl">Highlights</h1>
+          <p className="mt-4 max-w-[52ch] text-base leading-relaxed text-muted sm:text-lg">
             Recaps from the nights, weddings and projects we've been part of lately.
           </p>
-        </div>
+        </Reveal>
 
-        {/* Featured highlight */}
-        <div className="mb-14 sm:mb-16 bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 transition-colors">
+        {/* Featured */}
+        <Reveal as="article" className="group panel mt-14 overflow-hidden lg:mt-20">
           <div className="grid md:grid-cols-2">
-            <div className="relative h-64 md:h-full">
+            <div className="relative h-72 overflow-hidden md:h-full md:min-h-[26rem]">
               <img
                 src={featuredHighlight.image}
                 alt={featuredHighlight.title}
-                className="absolute inset-0 w-full h-full object-cover"
+                width={featuredHighlight.size[0]}
+                height={featuredHighlight.size[1]}
+                className="absolute inset-0 size-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
               />
             </div>
-            <div className="p-6 sm:p-8 flex flex-col justify-center">
-              <div className="flex items-center gap-3 mb-4">
-                <span
-                  className={`text-xs font-semibold px-3 py-1 rounded-full ring-1 ${tagStyles[featuredHighlight.tag]}`}
-                >
-                  {featuredHighlight.tag}
-                </span>
-                <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                  <FaCalendar className="w-3 h-3" />
-                  {featuredHighlight.date}
-                </span>
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 leading-tight">
+            <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
+              <Meta tag={featuredHighlight.tag} date={featuredHighlight.date} iso={featuredHighlight.iso} />
+              <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
                 {featuredHighlight.title}
               </h2>
-              <p className="text-sm sm:text-base text-gray-400 leading-relaxed mb-6">
-                {featuredHighlight.excerpt}
-              </p>
-              <button className="flex items-center gap-2 text-sm font-semibold text-pink-400 hover:text-pink-300 transition-colors w-fit">
-                Read highlight
-                <FaArrowRight className="w-3 h-3" />
-              </button>
+              <p className="mt-4 max-w-[46ch] text-base leading-relaxed text-muted">{featuredHighlight.excerpt}</p>
             </div>
           </div>
-        </div>
+        </Reveal>
 
-        {/* Highlight grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Grid */}
+        <div className="mt-6 grid gap-6 lg:grid-cols-12">
           {highlights.map((item, i) => (
-            <div
-              key={i}
-              className="group bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden hover:border-white/20 hover:-translate-y-1 transition-all duration-300"
-            >
-              <div className="relative h-44 overflow-hidden">
+            <Reveal as="article" key={item.title} delay={(i % 2) * 120} className={`group flex flex-col ${item.span}`}>
+              <div className="overflow-hidden rounded-[var(--radius-panel)] ring-1 ring-fg/10">
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  width={item.size[0]}
+                  height={item.size[1]}
+                  loading="lazy"
+                  className="h-64 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05] sm:h-80"
                 />
               </div>
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <span
-                    className={`text-xs font-semibold px-2.5 py-1 rounded-full ring-1 ${tagStyles[item.tag]}`}
-                  >
-                    {item.tag}
-                  </span>
-                  <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                    <FaCalendar className="w-3 h-3" />
-                    {item.date}
-                  </span>
-                </div>
-                <h3 className="text-base font-bold text-white mb-2 leading-snug">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-gray-400 leading-relaxed">
-                  {item.excerpt}
-                </p>
+              <div className="mt-5">
+                <Meta tag={item.tag} date={item.date} iso={item.iso} />
+                <h3 className="mt-3 text-xl font-semibold tracking-tight">{item.title}</h3>
+                <p className="mt-2 max-w-[52ch] text-[0.9375rem] leading-relaxed text-muted">{item.excerpt}</p>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </div>
