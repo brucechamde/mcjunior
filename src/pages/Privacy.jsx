@@ -47,7 +47,7 @@ const sections = [
       'We share information only when it is needed to do the job you have asked us to do:',
       {
         list: [
-          'Our hosting, email and IT service providers, who process it on our behalf. Messages sent through the contact form are handled by our email delivery provider, EmailJS, which passes them to our inbox.',
+          'Our hosting, email and IT service providers, who process it on our behalf. Messages sent through the contact form are delivered to our inbox by email, using Google services.',
           'MCs, DJs, performers and event staff working on your event, limited to the details they need.',
           'Government bodies, regulators or others when the law requires it.',
         ],
