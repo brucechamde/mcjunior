@@ -302,8 +302,12 @@
 
 .deck-vinyl { animation: deck-spin 3.6s linear infinite; }
 .deck-arm { animation: deck-sway 2.9s ease-in-out infinite; }
+.deck-arm-pose { transform: rotate(-16deg); transition: transform 0.9s var(--ease-out-expo); }
+.deck-arm-pose.is-down { transform: rotate(0deg); }
 .deck-ring { animation: deck-ring 3.9s ease-out infinite; }
 .deck-bar { transform-origin: bottom; transform: scaleY(0.5); animation: deck-bar 1s ease-in-out infinite; }
+/* Playing: JavaScript drives the bar heights from the audio, so the looping animation steps aside */
+.deck-bar.is-live { animation: none; transition: transform 0.08s linear; }
 
 /* Opacity only, and no fill-forwards: a finished animation must not keep the whole page on its own layer. */
 @keyframes page-in {

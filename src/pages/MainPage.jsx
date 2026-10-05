@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Home from '../components/Home'
+import Mixes from '../components/Mixes'
 import Services from '../components/Services'
 import Events from '../components/Events'
 import Contact from '../components/Contact'
@@ -20,6 +21,7 @@ function MainPage() {
   return (
     <>
       <Home />
+      <Mixes />
       <Services />
       <Events />
       <Contact />

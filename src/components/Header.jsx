@@ -8,6 +8,7 @@ import logo from '../assets/images/logo.png'
 const navItems = [
   { label: 'Home', to: '/#home', id: 'home' },
   { label: 'Highlights', to: '/highlights', path: '/highlights' },
+  { label: 'Mixes', to: '/#mixes', id: 'mixes', wideOnly: true },
   { label: 'Services', to: '/#services', id: 'services' },
   { label: 'Events', to: '/#events', id: 'events' },
   { label: 'Gallery', to: '/gallery', path: '/gallery' },
@@ -84,7 +85,7 @@ function Header() {
           {navItems.map((item) => {
             const active = isActive(item)
             return (
-              <li key={item.label} className="relative">
+              <li key={item.label} className={`relative ${item.wideOnly ? 'hidden lg:block' : ''}`}>
                 <Link
                   to={item.to}
                   aria-current={active ? 'page' : undefined}

@@ -1,6 +1,7 @@
 import { Routes, Route, useLocation } from 'react-router-dom'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import MiniPlayer from './components/MiniPlayer'
 import WaveBackground from './components/WaveBackground'
 import ScrollToTop from './components/ScrollToTop'
 import MainPage from './pages/MainPage'
@@ -35,6 +36,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      <MiniPlayer />
     </>
   )
 }

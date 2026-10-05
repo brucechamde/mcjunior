@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react'
 
+import { getLevels } from '../audio/engine'
+
 // Site-wide sound-wave visualizer, drawn on one fixed canvas behind the page.
-// Simulated audio (no microphone or file): layered waves and a spectrum row swell on a ~124 BPM beat.
-// Follows the active theme, stops animating for reduced-motion visitors, and pauses in hidden tabs.
+// By default it is simulated (waves and a spectrum row swelling on a ~124 BPM beat). While a mix plays,
+// the same waves and bars follow the real audio. Follows the active theme, stops animating for
+// reduced-motion visitors, and pauses in hidden tabs.
 
 const BPM = 124
 const BAR_COUNT = 72
@@ -51,6 +54,11 @@ function WaveBackground() {
     let frame = 0
     let lastMs = 1200
 
+    // Audio-follow state, eased so the change between simulated and live is smooth
+    let live = 0
+    let bass = 0
+    const spectrum = new Float32Array(BAR_COUNT)
+
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5)
       width = canvas.clientWidth
@@ -64,7 +72,20 @@ function WaveBackground() {
       lastMs = ms
       const t = ms / 1000
       const beat = ((t * BPM) / 60) % 1
-      const env = 0.7 + 0.3 * Math.exp(-beat * 4)
+      const simEnv = 0.7 + 0.3 * Math.exp(-beat * 4)
+
+      const levels = reduce ? null : getLevels()
+      live += ((levels ? 1 : 0) - live) * 0.06
+      bass += ((levels ? levels.bass : 0) - bass) * 0.35
+      for (let i = 0; i < BAR_COUNT; i++) {
+        let target = 0
+        if (levels) {
+          const bin = Math.min(levels.bins.length - 1, Math.floor(Math.pow(i / BAR_COUNT, 1.6) * 90) + 1)
+          target = levels.bins[bin] / 255
+        }
+        spectrum[i] += (target - spectrum[i]) * 0.35
+      }
+      const env = simEnv * (1 - live) + (0.6 + bass * 1.1) * live
 
       const sky = ctx.createLinearGradient(0, 0, 0, height)
       sky.addColorStop(0, palette.sky[0])
@@ -73,17 +94,17 @@ function WaveBackground() {
       ctx.fillStyle = sky
       ctx.fillRect(0, 0, width, height)
 
-      // Drifting stage lights
+      // Drifting stage lights (they brighten with the bass)
       const ax = width * (0.15 + 0.05 * Math.sin(t * 0.2))
       const lightA = ctx.createRadialGradient(ax, 0, 0, ax, 0, width * 0.6)
-      lightA.addColorStop(0, `rgba(${palette.lightA},${palette.lightAAlpha})`)
+      lightA.addColorStop(0, `rgba(${palette.lightA},${palette.lightAAlpha + bass * 0.18})`)
       lightA.addColorStop(1, `rgba(${palette.lightA},0)`)
       ctx.fillStyle = lightA
       ctx.fillRect(0, 0, width, height)
 
       const bx = width * (0.9 - 0.05 * Math.sin(t * 0.17))
       const lightB = ctx.createRadialGradient(bx, height * 0.3, 0, bx, height * 0.3, width * 0.55)
-      lightB.addColorStop(0, `rgba(${palette.lightB},${palette.lightBAlpha})`)
+      lightB.addColorStop(0, `rgba(${palette.lightB},${palette.lightBAlpha + bass * 0.12})`)
       lightB.addColorStop(1, `rgba(${palette.lightB},0)`)
       ctx.fillStyle = lightB
       ctx.fillRect(0, 0, width, height)
@@ -93,7 +114,9 @@ function WaveBackground() {
       ctx.fillStyle = palette.bars
       for (let i = 0; i < BAR_COUNT; i++) {
         const n = Math.sin(i * 0.55 + t * 2.1) * 0.5 + Math.sin(i * 0.23 - t * 1.3) * 0.5
-        const h = height * 0.09 * env * (0.35 + 0.65 * Math.abs(n))
+        const simHeight = 0.09 * simEnv * (0.35 + 0.65 * Math.abs(n))
+        const liveHeight = 0.02 + spectrum[i] * 0.2
+        const h = height * (simHeight * (1 - live) + liveHeight * live)
         ctx.fillRect(i * barWidth + barWidth * 0.18, height - h, barWidth * 0.64, h)
       }
 
