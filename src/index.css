@@ -261,6 +261,11 @@
   }
 }
 
+/* Full-screen photo viewer open: hide the header so its menu button doesn't show under the viewer's close button */
+body:has([role="dialog"][aria-modal="true"]) header {
+  visibility: hidden;
+}
+
 /* The logo file is white artwork; flip it to dark on the light theme */
 [data-theme="light"] .theme-logo {
   filter: invert(1) brightness(0.25);
