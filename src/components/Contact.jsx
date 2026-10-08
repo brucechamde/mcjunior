@@ -87,7 +87,7 @@ function Contact() {
       setStatus(result.via === 'mailto' ? 'opened' : 'sent')
       setForm(emptyForm)
     } else {
-      setStatus(result.reason === 'wait' ? 'wait' : 'error')
+      setStatus(result.reason === 'wait' || result.reason === 'rate' ? 'wait' : 'error')
     }
   }
 

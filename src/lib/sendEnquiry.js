@@ -49,10 +49,14 @@ export async function sendEnquiry({ name, email, message, botcheck, elapsed }) {
       signal: controller.signal,
     })
     const data = await res.json()
-    if (!data.ok) return { ok: false, reason: data.note }
+    if (!data.ok) {
+      console.warn('Contact form: the mail script declined the message:', data.note || 'no reason given')
+      return { ok: false, reason: data.note }
+    }
     markSent()
     return { ok: true, via: 'api' }
-  } catch {
+  } catch (error) {
+    console.warn('Contact form: could not reach the mail script:', error?.name || error)
     return { ok: false }
   } finally {
     clearTimeout(timer)
