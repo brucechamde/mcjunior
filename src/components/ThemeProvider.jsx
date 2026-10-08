@@ -32,15 +32,6 @@ export function ThemeProvider({ children }) {
     return () => query.removeEventListener('change', onChange)
   }, [])
 
-  // Keep other open tabs in sync
-  useEffect(() => {
-    const onStorage = (e) => {
-      if (e.key === STORAGE_KEY || e.key === null) setPreference(readStored())
-    }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
-  }, [])
-
   useEffect(() => {
     document.documentElement.dataset.theme = resolved
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[resolved])
