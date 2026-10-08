@@ -29,7 +29,7 @@ function MiniPlayer() {
             <p className="truncate text-sm font-medium" role="status">
               {error ? "Couldn't load this track" : mix.title}
             </p>
-            <p className="truncate text-xs text-dim">{mix.artist}, incompetech.com, CC BY 4.0</p>
+            <p className="truncate text-xs text-dim">{mix.artist}</p>
           </div>
 
           <div className="flex items-center gap-1">

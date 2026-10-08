@@ -1,67 +1,33 @@
-import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { PiCaretLeft, PiCaretRight, PiX } from 'react-icons/pi'
+import { useCallback, useRef, useState } from 'react'
 
 import Ambient from '../components/Ambient'
+import Lightbox from '../components/Lightbox'
+import Pagination from '../components/Pagination'
 import Reveal from '../components/Reveal'
-import { useGalleryPhotos } from '../hooks/useGalleryPhotos'
+import { CLOUDINARY } from '../config/gallery'
+import { localPhotos } from '../data/localPhotos'
+import { useCloudinaryPhotos } from '../hooks/useCloudinaryPhotos'
+import { usePagedList } from '../hooks/usePagedList'
+
+const PAGE_SIZE = 12
 
 const skeletonRatios = ['aspect-[3/4]', 'aspect-square', 'aspect-[4/5]', 'aspect-[3/2]', 'aspect-[3/4]', 'aspect-square', 'aspect-[4/5]', 'aspect-[3/2]']
 
 function Gallery() {
   // Photos load from Cloudinary (see src/config/gallery.js); bundled photos are the fallback.
-  const { status, photos, categories: photoCategories } = useGalleryPhotos()
-  const categories = ['All', ...photoCategories]
+  const { status, photos } = useCloudinaryPhotos(CLOUDINARY.tags.gallery, localPhotos)
   const loading = status === 'loading'
 
-  // The filter lives in the URL (?category=Weddings) so it can be shared and survives refresh.
-  const [params, setParams] = useSearchParams()
-  const requested = params.get('category')
-  const activeCategory = categories.includes(requested) ? requested : 'All'
-
   const [lightboxIndex, setLightboxIndex] = useState(null)
-  const closeRef = useRef(null)
   const triggerRef = useRef(null)
-
-  const filteredPhotos =
-    activeCategory === 'All' ? photos : photos.filter((p) => p.category === activeCategory)
-
-  const isOpen = lightboxIndex !== null
-  const count = filteredPhotos.length
-
-  const selectCategory = (cat) => {
-    setLightboxIndex(null)
-    setParams(cat === 'All' ? {} : { category: cat }, { replace: true })
-  }
-
-  const openLightbox = (index, e) => {
-    triggerRef.current = e.currentTarget
-    setLightboxIndex(index)
-  }
-
-  const closeLightbox = () => {
+  const closeLightbox = useCallback(() => {
     setLightboxIndex(null)
     triggerRef.current?.focus()
-  }
+  }, [])
 
-  useEffect(() => {
-    if (!isOpen) return
-    const onKey = (e) => {
-      if (e.key === 'Escape') closeLightbox()
-      if (e.key === 'ArrowRight') setLightboxIndex((i) => (i + 1) % count)
-      if (e.key === 'ArrowLeft') setLightboxIndex((i) => (i - 1 + count) % count)
-    }
-    window.addEventListener('keydown', onKey)
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    closeRef.current?.focus()
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      document.body.style.overflow = previousOverflow
-    }
-  }, [isOpen, count])
-
-  const current = isOpen ? filteredPhotos[lightboxIndex] : null
+  const { page, pageCount, pageItems, goToPage, gridRef } = usePagedList(photos, PAGE_SIZE, {
+    onChange: () => setLightboxIndex(null),
+  })
 
   return (
     <section className="relative isolate overflow-hidden px-4 pb-24 pt-32 sm:px-6 lg:px-8 lg:pb-32">
@@ -75,27 +41,6 @@ function Gallery() {
           </p>
         </Reveal>
 
-        <Reveal delay={120} className="mt-10 flex flex-wrap gap-2" role="group" aria-label="Filter photos by category">
-          {categories.map((cat) => {
-            const selected = activeCategory === cat
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => selectCategory(cat)}
-                aria-pressed={selected}
-                className={`h-10 rounded-full px-5 text-sm font-medium transition-[background-color,color,border-color,transform] duration-300 active:scale-[0.97] ${
-                  selected
-                    ? 'bg-fg text-ink-950'
-                    : 'border border-line text-muted hover:border-fg/25 hover:text-fg'
-                }`}
-              >
-                {cat}
-              </button>
-            )
-          })}
-        </Reveal>
-
         {loading && (
           <div aria-busy="true" aria-label="Loading photos" className="mt-10 columns-2 gap-4 sm:columns-3 lg:columns-4">
             {skeletonRatios.map((ratio, i) => (
@@ -104,12 +49,15 @@ function Gallery() {
           </div>
         )}
 
-        <div key={activeCategory} className="mt-10 columns-2 gap-4 sm:columns-3 lg:columns-4">
-          {filteredPhotos.map((photo, i) => (
+        <div key={page} ref={gridRef} className="mt-10 scroll-mt-24 columns-2 gap-4 sm:columns-3 lg:columns-4">
+          {pageItems.map((photo, i) => (
             <Reveal key={photo.id} delay={(i % 4) * 80} y={20} className="mb-4 break-inside-avoid">
               <button
                 type="button"
-                onClick={(e) => openLightbox(i, e)}
+                onClick={(e) => {
+                  triggerRef.current = e.currentTarget
+                  setLightboxIndex(i)
+                }}
                 aria-label={`Open photo: ${photo.alt}`}
                 className="group relative block w-full overflow-hidden rounded-xl ring-1 ring-fg/10"
               >
@@ -129,67 +77,12 @@ function Gallery() {
           ))}
         </div>
 
-        {!loading && count === 0 && (
-          <p className="mt-10 text-sm text-dim">No photos in this category yet. Check back soon.</p>
-        )}
+        {!loading && pageItems.length === 0 && <p className="mt-10 text-sm text-dim">No photos yet. Check back soon.</p>}
+
+        <Pagination page={page} pageCount={pageCount} onChange={goToPage} label="Gallery pages" />
       </div>
 
-      {current && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Photo viewer"
-          onClick={closeLightbox}
-          className="fixed inset-0 z-[var(--z-modal)] flex items-center justify-center overscroll-contain bg-black/85 px-4 backdrop-blur-md"
-          data-theme="dark"
-        >
-          <button
-            ref={closeRef}
-            type="button"
-            onClick={closeLightbox}
-            aria-label="Close viewer"
-            className="icon-btn absolute right-4 top-4 sm:right-8 sm:top-8"
-          >
-            <PiX size={20} aria-hidden="true" />
-          </button>
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setLightboxIndex((i) => (i - 1 + count) % count)
-            }}
-            aria-label="Previous photo"
-            className="icon-btn absolute left-4 top-1/2 -translate-y-1/2 sm:left-8"
-          >
-            <PiCaretLeft size={20} aria-hidden="true" />
-          </button>
-
-          <img
-            key={current.id}
-            src={current.full}
-            alt={current.alt}
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[85dvh] max-w-full rounded-2xl object-contain shadow-[0_40px_120px_-30px_rgba(232,87,127,0.35)]"
-          />
-
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setLightboxIndex((i) => (i + 1) % count)
-            }}
-            aria-label="Next photo"
-            className="icon-btn absolute right-4 top-1/2 -translate-y-1/2 sm:right-8"
-          >
-            <PiCaretRight size={20} aria-hidden="true" />
-          </button>
-
-          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tabular-nums text-muted" aria-live="polite">
-            {lightboxIndex + 1} / {count}
-          </p>
-        </div>
-      )}
+      <Lightbox photos={pageItems} index={lightboxIndex} onClose={closeLightbox} onChange={setLightboxIndex} />
     </section>
   )
 }

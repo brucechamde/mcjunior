@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { PiCheckCircle, PiClock, PiEnvelopeSimple, PiMapPin, PiPhone, PiWarningCircle } from 'react-icons/pi'
@@ -49,6 +49,12 @@ function Contact() {
   // idle | sending | sent | opened (email app) | error
   const [status, setStatus] = useState('idle')
   const formRef = useRef(null)
+  const openedAt = useRef(null)
+
+  // When the form appeared, so the server can spot instant bot submissions
+  useEffect(() => {
+    openedAt.current = Date.now()
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -74,13 +80,14 @@ function Contact() {
       email: form.email.trim(),
       message: form.message.trim(),
       botcheck: form.botcheck,
+      elapsed: Date.now() - (openedAt.current ?? Date.now()),
     })
 
     if (result.ok) {
       setStatus(result.via === 'mailto' ? 'opened' : 'sent')
       setForm(emptyForm)
     } else {
-      setStatus('error')
+      setStatus(result.reason === 'wait' ? 'wait' : 'error')
     }
   }
 
@@ -136,7 +143,7 @@ function Contact() {
             <div className="panel p-6 sm:p-9">
               <form ref={formRef} onSubmit={handleSubmit} noValidate className="flex flex-col gap-6">
                 <Field id="name" label="Name" error={errors.name}>
-                  <input {...fieldProps('name')} type="text" autoComplete="name" placeholder="Your name…" />
+                  <input {...fieldProps('name')} type="text" maxLength={100} autoComplete="name" placeholder="Your name…" />
                 </Field>
 
                 <Field id="email" label="Email" error={errors.email}>
@@ -144,6 +151,7 @@ function Contact() {
                     {...fieldProps('email')}
                     type="email"
                     inputMode="email"
+                    maxLength={200}
                     autoComplete="email"
                     spellCheck={false}
                     placeholder="you@example.com"
@@ -154,6 +162,7 @@ function Contact() {
                   <textarea
                     {...fieldProps('message')}
                     rows={5}
+                    maxLength={5000}
                     autoComplete="off"
                     placeholder="Tell us about your event…"
                     className="field resize-none"
@@ -193,6 +202,18 @@ function Contact() {
                           {status === 'sent'
                             ? "Thanks. Your message is on its way and we'll be in touch soon."
                             : 'Your email app should now open with your message ready to send.'}
+                        </motion.p>
+                      )}
+                      {status === 'wait' && (
+                        <motion.p
+                          key="wait"
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="flex items-center gap-2 text-sm text-muted"
+                        >
+                          <PiWarningCircle size={20} aria-hidden="true" className="shrink-0" />
+                          You just sent a message. Please wait a minute before sending another.
                         </motion.p>
                       )}
                       {status === 'error' && (

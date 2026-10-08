@@ -43,8 +43,6 @@ function Header() {
     return () => observer.disconnect()
   }, [pathname])
 
-  useEffect(() => setMenuOpen(false), [pathname])
-
   useEffect(() => {
     if (!menuOpen) return
     const onKey = (e) => e.key === 'Escape' && setMenuOpen(false)
@@ -73,7 +71,7 @@ function Header() {
         <Link to="/#home" aria-label="The MC Junior Project, home" className="group flex items-center">
           <img
             src={logo}
-            alt=""
+            alt="The MC Junior Project"
             width={160}
             height={58}
             className="theme-logo h-8 w-auto transition-transform duration-500 ease-out group-hover:scale-105 sm:h-9"
@@ -147,6 +145,7 @@ function Header() {
                 >
                   <Link
                     to={item.to}
+                    onClick={() => setMenuOpen(false)}
                     aria-current={isActive(item) ? 'page' : undefined}
                     className={`block rounded-xl px-3 py-3.5 text-lg font-medium transition-colors ${
                       isActive(item) ? 'text-accent' : 'text-fg hover:bg-fg/[0.04]'

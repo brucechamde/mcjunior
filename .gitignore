@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local secrets and settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.claude/settings.local.json

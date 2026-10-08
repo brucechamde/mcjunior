@@ -72,10 +72,3 @@ export const mixes = [
     src: '/audio/cyborg-ninja.mp3',
   },
 ]
-
-export const mixCredit = {
-  author: 'Kevin MacLeod',
-  authorUrl: 'https://incompetech.com',
-  license: 'Creative Commons: By Attribution 4.0',
-  licenseUrl: 'https://creativecommons.org/licenses/by/4.0/',
-}

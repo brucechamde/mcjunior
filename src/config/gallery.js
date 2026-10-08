@@ -1,22 +1,27 @@
-// Gallery photos come from Cloudinary (free plan), so you can add photos without touching the code.
+// Gallery and Highlights photos come from Cloudinary (free plan), so you can add photos without touching code.
 //
 // One-time setup
-//   1. Create a free account at cloudinary.com and copy your "Cloud name" (top of the dashboard).
-//   2. Settings > Security > "Restricted media types": untick "Resource list" and save.
+//   1. Settings > Security > "Restricted media types": untick "Resource list" and save.
 //      (This lets the website read the list of photos that share a tag.)
-//   3. Paste your cloud name below.
+//   2. cloudName below is your account's Cloud name.
 //
 // Adding photos
-//   Media Library > Upload. Give each photo the tag for its category:
-//     gallery-nightclub, gallery-weddings, gallery-corporate
-//   (tag = tagPrefix + the category name in lowercase, spaces become dashes).
-//   Folders are optional and only for your own tidiness. The tag is what the site reads.
-//   To add a new category, add its name to `categories` below and tag photos with gallery-<name>.
+//   Upload to Media Library (any folder) and give each photo a tag:
+//     Gallery    -> shows on the Gallery page
+//     Nightclub  -> shows on the Highlights page
+//   A photo can have both tags. Select several photos at once > "Add tags" to do a batch.
+//   The site reads the TAG, not the folder (Cloudinary does not publish folder contents).
+//   Capitalisation does not matter: Nightclub, nightclub and NIGHTCLUB are all found.
+//   New photos appear after a page refresh, newest first.
 //
-// While cloudName is empty, or if Cloudinary can't be reached, the site shows the
-// bundled photos from src/data/localPhotos.js instead.
+// If a tag has no photos, or Cloudinary can't be reached, that page shows the bundled photos instead
+// (src/data/localPhotos.js and src/data/localHighlights.js).
+//
+// To use different tags, change the values below.
 export const CLOUDINARY = {
   cloudName: 'rgjl1oez',
-  tagPrefix: 'gallery-',
-  categories: ['Nightclub', 'Weddings', 'Corporate'],
+  tags: {
+    gallery: 'Gallery',
+    highlights: 'Nightclub',
+  },
 }

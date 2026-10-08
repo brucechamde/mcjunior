@@ -1,0 +1,22 @@
+# Search engines may index the site. The music files are not for indexing or bulk download.
+User-agent: *
+Allow: /
+Disallow: /audio/
+
+# AI training crawlers: please do not use the site's photos or text
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+Sitemap: https://mcjunior.vercel.app/sitemap.xml

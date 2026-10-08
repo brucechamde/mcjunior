@@ -7,13 +7,12 @@ import gallery5 from '../assets/images/gallery/gallery5.jpeg'
 import gallery6 from '../assets/images/gallery/gallery6.jpeg'
 
 const local = [
-  { src: gallery1, width: 1152, height: 2048, category: 'Nightclub', alt: 'Nightclub event 1' },
-  { src: gallery2, width: 1152, height: 2048, category: 'Weddings', alt: 'Wedding event 1' },
-  { src: gallery3, width: 720, height: 482, category: 'Corporate', alt: 'Corporate event 1' },
-  { src: gallery4, width: 2048, height: 2048, category: 'Nightclub', alt: 'Nightclub event 2' },
-  { src: gallery5, width: 2048, height: 2048, category: 'Weddings', alt: 'Wedding event 2' },
-  { src: gallery6, width: 2048, height: 1536, category: 'Corporate', alt: 'Corporate event 2' },
+  { src: gallery1, width: 1152, height: 2048, alt: 'Event photo' },
+  { src: gallery2, width: 1152, height: 2048, alt: 'Event photo' },
+  { src: gallery3, width: 720, height: 482, alt: 'Event photo' },
+  { src: gallery4, width: 2048, height: 2048, alt: 'Event photo' },
+  { src: gallery5, width: 2048, height: 2048, alt: 'Event photo' },
+  { src: gallery6, width: 2048, height: 1536, alt: 'Event photo' },
 ]
 
 export const localPhotos = local.map((photo, i) => ({ ...photo, id: `local-${i}`, full: photo.src }))
-export const localCategories = ['Nightclub', 'Weddings', 'Corporate']

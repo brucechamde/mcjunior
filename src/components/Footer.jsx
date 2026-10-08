@@ -20,15 +20,17 @@ const socials = [
   { label: 'TikTok', icon: SiTiktok, href: 'https://www.tiktok.com/@mcjuniorproject?_r=1&_t=ZS-98mwt2icCmq' },
 ]
 
+const year = new Date().getFullYear()
+
 function Footer() {
   return (
     <footer className="border-t border-line">
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
         <div>
           <Link to="/" aria-label="The MC Junior Project, home">
-            <img src={logo} alt="" width={160} height={58} className="theme-logo h-8 w-auto" />
+            <img src={logo} alt="The MC Junior Project" width={160} height={58} className="theme-logo h-8 w-auto" />
           </Link>
-          <p className="mt-4 text-sm text-dim">© {new Date().getFullYear()} Bruce. All rights reserved.</p>
+          <p className="mt-4 text-sm text-dim">© {year} Bruce. All rights reserved.</p>
         </div>
 
         <nav aria-label="Footer" className="flex flex-col gap-4 text-sm">

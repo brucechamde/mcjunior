@@ -1,17 +1,19 @@
+import { useCallback, useRef, useState } from 'react'
 import { PiCalendarBlank } from 'react-icons/pi'
 
 import Ambient from '../components/Ambient'
+import Lightbox from '../components/Lightbox'
+import Pagination from '../components/Pagination'
 import Reveal from '../components/Reveal'
+import { CLOUDINARY } from '../config/gallery'
+import { localHighlights } from '../data/localHighlights'
+import { useCloudinaryPhotos } from '../hooks/useCloudinaryPhotos'
+import { usePagedList } from '../hooks/usePagedList'
 
-import featured from '../assets/images/highlights/featured.jpeg'
-import highlight1 from '../assets/images/highlights/highlight1.jpeg'
-import highlight2 from '../assets/images/highlights/highlight2.jpeg'
-import highlight3 from '../assets/images/highlights/highlight3.jpeg'
-import highlight4 from '../assets/images/highlights/highlight4.jpeg'
+const PAGE_SIZE = 9
 
+// Recap text for the lead photo. Edit this when there is a new night to feature.
 const featuredHighlight = {
-  image: featured,
-  size: [1152, 2048],
   tag: 'Nightclub',
   date: 'Aug 27, 2026',
   iso: '2026-08-27',
@@ -20,63 +22,23 @@ const featuredHighlight = {
     "The Moser Room came alive with a packed floor, a killer lineup, and a crowd that didn't stop moving until close. Here's a look back at the night.",
 }
 
-// Four items fill a 7/5 + 5/7 grid exactly, so there are no empty cells.
-const highlights = [
-  {
-    image: highlight1,
-    size: [1152, 2048],
-    tag: 'Weddings',
-    date: 'Jul 12, 2026',
-    iso: '2026-07-12',
-    title: 'A garden wedding to remember',
-    excerpt: 'Soft lighting, live acoustic sets, and a reception that ran well past midnight.',
-    span: 'lg:col-span-7',
-  },
-  {
-    image: highlight2,
-    size: [720, 482],
-    tag: 'Corporate',
-    date: 'Jun 3, 2026',
-    iso: '2026-06-03',
-    title: 'Telstra end-of-year celebration',
-    excerpt: 'Full production for 300+ guests, from stage design to the closing set.',
-    span: 'lg:col-span-5',
-  },
-  {
-    image: highlight3,
-    size: [2048, 2048],
-    tag: 'Talent',
-    date: 'May 18, 2026',
-    iso: '2026-05-18',
-    title: 'Meet our newest signed DJ',
-    excerpt: 'Straight from the local club circuit to our talent roster this month.',
-    span: 'lg:col-span-5',
-  },
-  {
-    image: highlight4,
-    size: [2048, 2048],
-    tag: 'Nightclub',
-    date: 'Apr 29, 2026',
-    iso: '2026-04-29',
-    title: 'Behind the scenes: building a set',
-    excerpt: 'What actually goes into planning a three-hour nightclub takeover.',
-    span: 'lg:col-span-7',
-  },
-]
-
-function Meta({ tag, date, iso }) {
-  return (
-    <div className="flex items-center gap-4 text-sm">
-      <span className="font-medium text-accent">{tag}</span>
-      <span className="flex items-center gap-1.5 text-dim">
-        <PiCalendarBlank size={16} aria-hidden="true" />
-        <time dateTime={iso}>{date}</time>
-      </span>
-    </div>
-  )
-}
-
 function Highlights() {
+  // Photos load from Cloudinary by tag (see src/config/gallery.js); bundled photos are the fallback.
+  const { status, photos } = useCloudinaryPhotos(CLOUDINARY.tags.highlights, localHighlights, 'Highlight photo')
+  const loading = status === 'loading'
+  const [lead, ...rest] = photos
+
+  const [lightboxIndex, setLightboxIndex] = useState(null)
+  const triggerRef = useRef(null)
+  const closeLightbox = useCallback(() => {
+    setLightboxIndex(null)
+    triggerRef.current?.focus()
+  }, [])
+
+  const { page, pageCount, pageItems, goToPage, gridRef } = usePagedList(rest, PAGE_SIZE, {
+    onChange: () => setLightboxIndex(null),
+  })
+
   return (
     <section className="relative isolate overflow-hidden px-4 pb-24 pt-32 sm:px-6 lg:px-8 lg:pb-32">
       <Ambient />
@@ -89,51 +51,73 @@ function Highlights() {
           </p>
         </Reveal>
 
-        {/* Featured */}
-        <Reveal as="article" className="group panel mt-14 overflow-hidden lg:mt-20">
-          <div className="grid md:grid-cols-2">
-            <div className="relative h-72 overflow-hidden md:h-full md:min-h-[26rem]">
-              <img
-                src={featuredHighlight.image}
-                alt={featuredHighlight.title}
-                width={featuredHighlight.size[0]}
-                height={featuredHighlight.size[1]}
-                className="absolute inset-0 size-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
-              />
-            </div>
-            <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
-              <Meta tag={featuredHighlight.tag} date={featuredHighlight.date} iso={featuredHighlight.iso} />
-              <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-                {featuredHighlight.title}
-              </h2>
-              <p className="mt-4 max-w-[46ch] text-base leading-relaxed text-muted">{featuredHighlight.excerpt}</p>
-            </div>
-          </div>
-        </Reveal>
+        {loading && (
+          <div aria-busy="true" aria-label="Loading photos" className="mt-14 h-80 animate-pulse rounded-[var(--radius-panel)] bg-fg/[0.06] lg:mt-20" />
+        )}
 
-        {/* Grid */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-12">
-          {highlights.map((item, i) => (
-            <Reveal as="article" key={item.title} delay={(i % 2) * 120} className={`group flex flex-col ${item.span}`}>
-              <div className="overflow-hidden rounded-[var(--radius-panel)] ring-1 ring-fg/10">
+        {/* Lead photo with the recap */}
+        {lead && (
+          <Reveal as="article" className="group panel mt-14 overflow-hidden lg:mt-20">
+            <div className="grid md:grid-cols-2">
+              <div className="relative h-72 overflow-hidden md:h-full md:min-h-[26rem]">
                 <img
-                  src={item.image}
-                  alt={item.title}
-                  width={item.size[0]}
-                  height={item.size[1]}
-                  loading="lazy"
-                  className="h-64 w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05] sm:h-80"
+                  src={lead.full}
+                  alt={lead.alt}
+                  width={lead.width}
+                  height={lead.height}
+                  className="absolute inset-0 size-full object-cover transition-transform duration-[1200ms] ease-out group-hover:scale-[1.04]"
                 />
               </div>
-              <div className="mt-5">
-                <Meta tag={item.tag} date={item.date} iso={item.iso} />
-                <h3 className="mt-3 text-xl font-semibold tracking-tight">{item.title}</h3>
-                <p className="mt-2 max-w-[52ch] text-[0.9375rem] leading-relaxed text-muted">{item.excerpt}</p>
+              <div className="flex flex-col justify-center p-7 sm:p-10 lg:p-14">
+                <div className="flex items-center gap-4 text-sm">
+                  <span className="font-medium text-accent">{featuredHighlight.tag}</span>
+                  <span className="flex items-center gap-1.5 text-dim">
+                    <PiCalendarBlank size={16} aria-hidden="true" />
+                    <time dateTime={featuredHighlight.iso}>{featuredHighlight.date}</time>
+                  </span>
+                </div>
+                <h2 className="mt-5 text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+                  {featuredHighlight.title}
+                </h2>
+                <p className="mt-4 max-w-[46ch] text-base leading-relaxed text-muted">{featuredHighlight.excerpt}</p>
               </div>
+            </div>
+          </Reveal>
+        )}
+
+        {/* The rest of the night, a page at a time */}
+        <div key={page} ref={gridRef} className="mt-6 scroll-mt-24 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3">
+          {pageItems.map((photo, i) => (
+            <Reveal key={photo.id} delay={(i % 3) * 100} y={20} className="group">
+              <button
+                type="button"
+                onClick={(e) => {
+                  triggerRef.current = e.currentTarget
+                  setLightboxIndex(i)
+                }}
+                aria-label={`Open photo: ${photo.alt}`}
+                className="relative block aspect-[4/5] w-full overflow-hidden rounded-[var(--radius-panel)] ring-1 ring-fg/10"
+              >
+                <img
+                  src={photo.src}
+                  srcSet={photo.srcSet}
+                  sizes="(min-width: 1024px) 33vw, 50vw"
+                  alt={photo.alt}
+                  width={photo.width}
+                  height={photo.height}
+                  loading="lazy"
+                  className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
+                />
+                <span className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+              </button>
             </Reveal>
           ))}
         </div>
+
+        <Pagination page={page} pageCount={pageCount} onChange={goToPage} label="Highlights pages" />
       </div>
+
+      <Lightbox photos={pageItems} index={lightboxIndex} onClose={closeLightbox} onChange={setLightboxIndex} />
     </section>
   )
 }
