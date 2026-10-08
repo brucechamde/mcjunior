@@ -31,6 +31,7 @@
  */
 
 const TO = 'brucechamde@gmail.com'
+const VERSION = 'v2'
 const SENDER_NAME = 'The MC Junior Project website'
 
 const MAX_PER_HOUR = 15
@@ -70,7 +71,9 @@ function doPost(e) {
 
 // Handy for opening the URL in a browser to confirm the deployment is live.
 function doGet() {
-  return reply(true, 'contact form endpoint is live')
+  // Shows which version is deployed and where mail goes (masked), so a deployment can be checked from outside
+  const at = TO.indexOf('@')
+  return reply(true, 'contact form ' + VERSION + ' is live, sends to ' + TO.charAt(0) + '***' + TO.slice(at))
 }
 
 function clean(value, max) {
