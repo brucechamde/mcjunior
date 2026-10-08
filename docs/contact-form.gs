@@ -2,7 +2,7 @@
  * Contact form mailer for The MC Junior Project website.
  *
  * Runs in Google Apps Script as brucechamde@gmail.com. The website POSTs the enquiry here, and this script
- * emails it to dangoria.praveen1@gmail.com through Gmail. Visitors never see the Gmail address; the visitor's own
+ * emails it to brucechamde@gmail.com through Gmail. Visitors never see the Gmail address; the visitor's own
  * address is set as Reply-To so hitting Reply answers them directly.
  *
  * SETUP (signed in to brucechamde@gmail.com)
@@ -30,7 +30,7 @@
  * Free Gmail accounts can send about 100 emails a day through Apps Script.
  */
 
-const TO = 'dangoria.praveen1@gmail.com'
+const TO = 'brucechamde@gmail.com'
 const SENDER_NAME = 'The MC Junior Project website'
 
 const MAX_PER_HOUR = 15
