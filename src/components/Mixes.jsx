@@ -85,7 +85,17 @@ function Mixes() {
           </ul>
         </Reveal>
 
-       
+        <p className="mt-5 max-w-[70ch] text-xs leading-relaxed text-dim">
+          Music by{' '}
+          <a href={mixCredit.authorUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-fg">
+            {mixCredit.author}
+          </a>{' '}
+          (incompetech.com), licensed under{' '}
+          <a href={mixCredit.licenseUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4 hover:text-fg">
+            {mixCredit.license}
+          </a>
+          .
+        </p>
       </div>
     </section>
   )

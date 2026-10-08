@@ -8,7 +8,7 @@ import DJDeck from './DJDeck'
 import Magnetic from './Magnetic'
 import Reveal from './Reveal'
 
-import img1 from '../assets/images/Img.jpg'
+import img1 from '../assets/images/img.jpeg'
 import img2 from '../assets/images/Img2.jpg'
 import img3 from '../assets/images/Img3.png'
 

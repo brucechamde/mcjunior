@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { PiArrowRight, PiCalendarBlank, PiMapPin } from 'react-icons/pi'
 
 import Reveal from './Reveal'
-import poster from '../assets/images/Img.jpg'
+import poster from '../assets/images/img.jpeg'
 
 const events = [
   {
